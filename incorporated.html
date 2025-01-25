@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gift Matching</title>
+<style>
+#dragThis { 
+    min-height: 300px;
+    max-height: 650px;
+    width: 94%;
+    max-width: 600px;
+    height: 60%;
+    padding: 0em;
+    border: 1px solid #ccc;
+    background-color: #fcfcfc;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border-radius: 1em;
+}
+body { font-family: serif; }
+.card:hover { box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2); }
+</style>
+<script src="people.js"></script>
+</head>
+<body>
+<div data-role="page" id="pageone">
+  <div style="background-color: white; font size" data-role="header">
+    <h1 style="margin: 0; font-weight: normal; color: #bf151d">
+      <b style="color: pink">GIFT🎁</b>H<b style="color: beige"></b>UB
+    </h1>
+  </div>
+  <div data-role="main" class="ui-content">
+    <div id="current-category"></div>
+    <div id="choices-container"></div>
+  </div>
+  <div data-role="footer">
+    <h1>Built by <a href="https://www.youtube.com/watch?v=Aq5WXmQQooo">gweenipie</a></h1>
+  </div>
+</div>
+
+<script>
+class TreeNode {
+    constructor(value) {
+        this.value = value;
+        this.children = [];
+        this.url = "";  // URL for official product page
+    }
+
+    addChild(node) {
+        this.children.push(node);
+    }
+
+    setUrl(url) {
+        this.url = url;
+    }
+}
+
+class GiftMatching {
+    constructor() {
+        // Initialize tree structure with categories, subcategories, items
+        this.root = new TreeNode("root");
+
+        const forHim = new TreeNode("for him");
+        const forHer = new TreeNode("for her");
+        this.root.addChild(forHim);
+        this.root.addChild(forHer);
+
+        const tech = new TreeNode("tech");
+        const fashion = new TreeNode("fashion");
+        const sports = new TreeNode("sports");
+        forHim.addChild(tech);
+        forHim.addChild(fashion);
+        forHim.addChild(sports);
+
+        const beauty = new TreeNode("beauty");
+        const fashionHer = new TreeNode("fashion");
+        const techHer = new TreeNode("tech");
+        forHer.addChild(beauty);
+        forHer.addChild(fashionHer);
+        forHer.addChild(techHer);
+
+        const smartphones = new TreeNode("smartphones");
+        const laptops = new TreeNode("laptops");
+        const airpods = new TreeNode("airpods");
+        tech.addChild(smartphones);
+        tech.addChild(laptops);
+        tech.addChild(airpods);
+
+        const iphone = new TreeNode("iPhone 14");
+        const samsung = new TreeNode("Samsung Galaxy S21");
+        smartphones.addChild(iphone);
+        smartphones.addChild(samsung);
+        iphone.setUrl("https://www.apple.com/iphone-14/");
+        samsung.setUrl("https://www.samsung.com/galaxy-s21/");
+
+        const gamingLaptop = new TreeNode("gaming laptop");
+        const ultrabook = new TreeNode("ultrabook");
+        laptops.addChild(gamingLaptop);
+        laptops.addChild(ultrabook);
+        gamingLaptop.setUrl("https://www.dell.com/gaming-laptops");
+        ultrabook.setUrl("https://www.lenovo.com/ultrabooks");
+
+        airpods.setUrl("https://www.apple.com/airpods");
+
+        this.currentCategory = null;
+        this.currentOptionIndex = 0;
+        this.optionHistory = [];
+        this.displayingUrl = false;
+
+        this.categoryContainer = document.getElementById("current-category");
+        this.choicesContainer = document.getElementById("choices-container");
+
+        this.initializeKeyListeners();
+    }
+
+    initializeKeyListeners() {
+        document.addEventListener('keydown', (event) => {
+            if (!this.currentCategory) {
+                if (event.key === 'ArrowLeft') {
+                    this.selectCategory('for him');
+                } else if (event.key === 'ArrowRight') {
+                    this.selectCategory('for her');
+                }
+            } else {
+                if (event.key === 'ArrowLeft') {
+                    this.swipeLeft(this.currentCategory.children[this.currentOptionIndex]);
+                } else if (event.key === 'ArrowRight') {
+                    this.swipeRight();
+                }
+            }
+        });
+    }
+
+    displayChoice() {
+        const currentOption = this.currentCategory.children[this.currentOptionIndex];
+        if (!currentOption) {
+            this.categoryContainer.innerHTML = `<h2>No more options available in this category.</h2>`;
+            return;
+        }
+
+        if (!this.displayingUrl) {
+            this.categoryContainer.innerHTML = `<h2>Current category: ${this.currentCategory.value}</h2>`;
+            this.choicesContainer.innerHTML = `
+                <p>Do you like this item? ${currentOption.value}</p>
+                <p>Press the Left Arrow key for Yes or Right Arrow key for No</p>
+            `;
+        } else {
+            // If user is done and chose an item, show URL
+            this.categoryContainer.innerHTML = `<h2>Official Product Page:</h2>`;
+            this.choicesContainer.innerHTML = `
+                <a href="${currentOption.url}" target="_blank">Click here to view product</a>
+                <button onclick="giftMatching.goBack()">Go Back to Categories</button>
+            `;
+        }
+    }
+
+    swipeLeft(option) {
+        if (option.children.length > 0) {
+            this.optionHistory.push({ category: this.currentCategory, index: this.currentOptionIndex });
+            this.currentCategory = option;
+            this.currentOptionIndex = 0; // Reset index to show first child
+        } else {
+            // If no more subcategories, show the official product page
+            this.displayingUrl = true;
+        }
+        this.displayChoice();
+    }
+
+    swipeRight() {
+        /** User swiped right (No) - Go to the next option in the same category */
+        if (this.currentOptionIndex < this.currentCategory.children.length - 1) {
+            this.currentOptionIndex++;
+        } else {
+            // If no more options in the category, go back to the root category or end
+            if (this.optionHistory.length > 0) {
+                const lastState = this.optionHistory.pop();
+                this.currentCategory = lastState.category;
+                this.currentOptionIndex = lastState.index + 1; // Move to next option
+            } else {
+                this.categoryContainer.innerHTML = "<h2>No more options available!</h2>";
+                return;
+            }
+        }
+        this.displayChoice();
+    }
+
+    goBack() {
+        /** Go back to the previous category */
+        this.displayingUrl = false;
+        this.currentCategory = this.root;
+        this.currentOptionIndex = 0;
+        this.displayChoice();
+    }
+
+    start() {
+        // Step 1: Allow the user to select "For Him" or "For Her"
+        this.categoryContainer.innerHTML = `
+            <h2>Select a category using arrow keys</h2>
+            <p>Left Arrow: For Him</p>
+            <p>Right Arrow: For Her</p>
+        `;
+        this.choicesContainer.innerHTML = '';
+    }
+
+    selectCategory(category) {
+        const selectedCategory = this.root.children.find(cat => cat.value === category);
+        this.currentCategory = selectedCategory;
+        this.displayChoice();
+    }
+}
+
+// Initialize and start the gift-matching process after the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const giftMatching = new GiftMatching();
+    window.giftMatching = giftMatching;  // Ensure giftMatching is globally accessible
+    giftMatching.start();
+});
+</script>
+</body>
+</html>
