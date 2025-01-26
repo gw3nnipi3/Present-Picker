@@ -1,5 +1,6 @@
 body {
     background-color: #ffdbe3;
+    font-family: 'Arial', sans-serif;
 }
 
 nav {
@@ -26,7 +27,7 @@ nav ul li a {
     text-decoration: none;
     color: white;
     font-size: 1rem;
-    font-family:Georgia, 'Times New Roman', Times, serif;
+    font-family: 'Georgia', 'Times New Roman', Times, serif;
     padding: 8px 20px;
     border-radius: 5px; 
     transition: background-color 0.3s ease;
@@ -45,3 +46,27 @@ body {
 main {
     margin-top: 60px;
 }
+
+#goodbanner, #badbanner, #neutralbanner {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    text-align: center;
+    padding-top: 20px;
+    font-size: 25pt;
+    color: #efefef;
+}
+
+#goodbanner {
+    background-color: green;
+}
+
+#badbanner {
+    background-color: #bf151d;
+}
+
+#neutralbanner {
+    background-color: #2176ff;
+    text-shadow: none;
+    opacity: 1;
+}
+
